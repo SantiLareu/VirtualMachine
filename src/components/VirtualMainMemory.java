@@ -60,8 +60,7 @@ public class VirtualMainMemory {
 	}
 
 	public void setMemory(byte[] memory, byte[] size, int param_size) throws Exception {
-		int s = ((int)(size[0] << 8)|(int)(size[1]) & 0xFF);
-		//int s = ((size[0] & 0xFF) << 8) | (size[1] & 0xFF);
+		int s = ((size[0] & 0xFF) << 8) | (size[1] & 0xFF);
 		if(s > this.MEMORY_SIZE) {
 			throw new Exception("Exceeded memory size");
 		}else {

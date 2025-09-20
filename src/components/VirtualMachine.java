@@ -130,30 +130,19 @@ public class VirtualMachine {
             
             byte[] header = new byte[5];
             byte[] version = new byte[1];
-
-            
-            
             System.arraycopy(allbytes,0,header,0, 5);
-            
             validateHeader(header);
-            
             System.arraycopy(allbytes, 5, version, 0, 1);
-            
             validateVersion(version);
-            
-            
-            
         } catch (Exception e) {
             throw e;
         }
-        
     }
 
     protected void validateVersion(byte[] version) throws Exception{
         if(version[0] != 1) {
             throw new Exception("Invalid version");
         }
-        
     }
 
     protected void validateHeader (byte[] header) throws Exception{
@@ -162,8 +151,7 @@ public class VirtualMachine {
         for(int i = 0;i < 5;i++) {
             if(header[i] != expected[i]) {
                 throw new Exception("Invalid Header");
-            }
-                
+            }  
         }
     }
 
@@ -177,8 +165,6 @@ public class VirtualMachine {
         if(!Files.exists(path)) {
             throw new Exception("File not found");
         }
-        
-        
     }
 
     // FIN BLOQUE VALIDACIONES
@@ -202,8 +188,8 @@ public class VirtualMachine {
 
     // INICIA BLOQUE DISASSEMBLER
 
-    public void disassembler(byte[] offset) throws Exception{
-        int entry_point = ((int)offset[0]<<16) | ((int)offset[1]);
+    public void disassembler() throws Exception{
+        int entry_point = 0;
         System.out.println("--------------------DISASSEMBLER--------------------");
         CSDisassembler(entry_point);
         System.out.println("----------------------------------------------------");
@@ -280,9 +266,10 @@ public class VirtualMachine {
         
         int instruction;
         int codop;
-        int limitcodesegment = this.segTable.LogicToPhysic(this.registers.getRegister(0)) + this.segTable.getSize(this.registers.getRegister(0) >> 16);
+        int CS = this.registers.getRegister(26);
+        int limitcodesegment = this.segTable.LogicToPhysic(CS) + this.segTable.getSize(CS >> 16);
 
-        while(this.registers.getRegister(5) != -1 && this.segTable.LogicToPhysic(this.registers.getRegister(5)) < limitcodesegment) {
+        while(this.registers.getRegister(3) != -1 && this.segTable.LogicToPhysic(this.registers.getRegister(3)) < limitcodesegment) {
             
             instruction = this.getInstruction();
             codop = this.getOpcode(instruction);
@@ -299,7 +286,7 @@ public class VirtualMachine {
     protected int getInstruction() throws Exception {
         int instruction;
     
-        instruction = this.virtualMemory.readByte(this.segTable.LogicToPhysic(this.registers.getRegister(5)));
+        instruction = this.virtualMemory.readByte(this.segTable.LogicToPhysic(this.registers.getRegister(3)));
 
         return instruction;
     }
@@ -322,7 +309,7 @@ public class VirtualMachine {
     protected void addIP(int register){
         int cant =(((register >> 6) & 0x3) + ((register >> 4) & 0x3));
         cant = cant + 1;
-        this.registers.add(5, cant);
+        this.registers.add(3, cant);
     }
 
 
@@ -337,7 +324,7 @@ public class VirtualMachine {
         int data = 0;
         
         for(int i = 1; i <= tipo; i++) {
-            data = ((data << 8) | this.virtualMemory.readByte(this.segTable.LogicToPhysic(this.registers.getRegister(5) + offset + i)));
+            data = ((data << 8) | this.virtualMemory.readByte(this.segTable.LogicToPhysic(this.registers.getRegister(3) + offset + i)));
         }
         return data;
     }

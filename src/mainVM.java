@@ -1,5 +1,4 @@
 
-
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import components.VirtualMachine;
@@ -20,9 +19,7 @@ public class mainVM {
 			vm.startMemory(allbytes);
 
 			if(vm.getDissasembler()){
-				byte[] offset = new byte[2];
-				System.arraycopy(allbytes, 16, offset, 0, 2);
-				vm.disassembler(offset);
+				vm.disassembler();
 			}
 
 			vm.execute();
