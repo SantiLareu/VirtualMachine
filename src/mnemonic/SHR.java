@@ -12,7 +12,7 @@ public class SHR extends Mnemonic2 {
     @Override
     public void operate(Operand A, Operand B) throws Exception {
 
-        int value = A.getValue() >> B.getValue();
+        int value = A.getValue() >>> B.getValue();
         A.setValue(value);
         ModifyCC(value);
     }

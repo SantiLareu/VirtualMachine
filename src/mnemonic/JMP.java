@@ -12,8 +12,8 @@ public class JMP extends Mnemonic1 {
 
     @Override
     public void operate(Operand A) throws Exception {
-        int address = this.vm.getRegisters().getRegister(0);
+        int address = this.vm.getRegisters().getRegister(26);
         address += A.getValue();
-        this.vm.getRegisters().setRegister(5, address);
+        this.vm.getRegisters().setRegister(3, address);
     }
 }   

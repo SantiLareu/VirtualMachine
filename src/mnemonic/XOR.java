@@ -15,8 +15,6 @@ public class XOR extends Mnemonic2 {
         int value = (A.getValue() ^ B.getValue()); 
         A.setValue(value); 
         ModifyCC(value);
-
-
     }
 
 

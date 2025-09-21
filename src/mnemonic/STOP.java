@@ -8,6 +8,6 @@ public  class STOP extends Mnemonic0 {
 
     @Override
     public void operate() throws Exception {
-        this.vm.getRegisters().setRegister(5, -1);
+        this.vm.getRegisters().setRegister(3, -1);
     }
 }

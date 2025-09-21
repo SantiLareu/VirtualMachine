@@ -14,7 +14,7 @@ public class DIV extends Mnemonic2 {
         if (B.getValue() == 0) { 
             throw new Exception("Division by zero");
         }
-        this.vm.getRegisters().setRegister(9,A.getValue() % B.getValue());
+        this.vm.getRegisters().setRegister(16,A.getValue() % B.getValue());
         A.setValue(A.getValue() / B.getValue());
         ModifyCC(A.getValue()); 
         

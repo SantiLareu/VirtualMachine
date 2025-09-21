@@ -277,6 +277,8 @@ public class VirtualMachine {
 
             A = this.getOperand(((instruction >> 4) & 0x3), this.operandA, this.getData(instruction, ((instruction >> 6) & 0x3)));
             B = this.getOperand(((instruction >> 6) & 0x3), this.operandB, this.getData(instruction,0));
+            
+            this.setOp1Op2(A, B, instruction);
             this.addIP(instruction);
             this.Operation(codop, A, B, this.cantOP(instruction));
         }
@@ -342,19 +344,32 @@ public class VirtualMachine {
         return operand;
     }
 
-    void setOp1Op2(int op1, int op2){
+    void setOp1Op2(Operand op1, Operand op2, int instruction) {
+        int tipoA = (instruction >> 4) & 0x3;
+        int tipoB = (instruction >> 6) & 0x3;
 
+        int regOp1 = 0, regOp2 = 0;
+
+        if (op1 != null){
+            regOp1 = (tipoA << 24) | ((op1.getData() & 0x00FFFFFF));
+            regOp2 = (tipoB << 24) | ((op2.getData() & 0x00FFFFFF));
+        }else if(op2 != null){
+            regOp1 = (tipoB << 24) | ((op2.getData() & 0x00FFFFFF));
+        }
+
+        this.registers.setRegister(5, regOp1);
+        this.registers.setRegister(6, regOp2);
     }
 
-    protected void Operation(int codop, Operand A, Operand B, int cantop) throws Exception{
-        if(cantop == 0 && (codop == 0x0F || codop == 0x0E)) {
-            mnemonics0.get(codop).operate();
-            this.setOp1Op2(0, 0);
 
-        }else if(cantop == 1 && codop >= 0x00 && codop <= 0x0D) {
+    protected void Operation(int codop, Operand A, Operand B, int cantop) throws Exception{
+        if(cantop == 0 && codop == 0x0F) {
+            mnemonics0.get(codop).operate();
+
+        }else if(cantop == 1 && codop >= 0x00 && codop <= 0x08) {
             mnemonics1.get(codop).operate(B);
 
-        }else if(cantop == 2 && codop >= 0x10 && codop <= 0x1E) {
+        }else if(cantop == 2 && codop >= 0x10 && codop <= 0x1F) {
             mnemonics2.get(codop).operate(A, B);
 
         }else {

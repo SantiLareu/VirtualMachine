@@ -16,13 +16,17 @@ public class SYS extends Mnemonic1 {
     
     @Override
     public void operate(Operand A) throws Exception {
-        int ECX = vm.getRegisters().getRegister(12);
-        int EDX = vm.getRegisters().getRegister(13);
+        int ECX = this.vm.getRegisters().getRegister(12);
+        int EDX = this.vm.getRegisters().getRegister(13);
+        int EAX = this.vm.getRegisters().getRegister(10);
         int type = A.getValue();
+
+        int numberCells = ECX & 0xFFFF;
+        int sizeCells = (ECX >> 16) & 0xFFFF; 
 
         switch (type) {
             case 1:
-                this.READ((ECX & 0xFF),((ECX >> 8) & 0xFF), (EDX & 0xFF));
+                this.READ(numberCells, sizeCells, EAX, EDX);
                 break;
             case 2:
                 this.WRITE((ECX & 0xFF),((ECX >> 8) & 0xFF), (EDX & 0xFF));
@@ -36,10 +40,10 @@ public class SYS extends Mnemonic1 {
     }
     
     //FUNCIONES COMUNES
-    private void writeInMemory(int value, int CH, int logic_address) throws Exception {
+    private void writeInMemory(int value, int sizeCells, int logic_address) throws Exception {
 
         int address = this.vm.getSegTable().LogicToPhysic(logic_address);
-        this.vm.getVirtualMemory().writeNbytes(address, CH, value);
+        this.vm.getVirtualMemory().writeNbytes(address, sizeCells, value);
     }
     
     private int readFromMemory(int CH, int logic_address) throws Exception {
@@ -51,18 +55,18 @@ public class SYS extends Mnemonic1 {
 
     //INICIO BLOQUE READ (SYS 1)
 
-    private void READ(int CL,int CH, int AL) throws Exception {
+    private void READ(int numberCells,int sizeCells, int format, int EDX) throws Exception {
         int value;
-        int address = this.vm.getRegisters().getRegister(13);
+        int address = EDX;
         Scanner input = new Scanner(System.in);
 
-        for(int i = 0; i < CL; i++){
+        for(int i = 0; i < numberCells; i++){
             try{
                 System.out.print("["+ String.format("%04X",this.vm.getSegTable().LogicToPhysic(address)) + "]: ");
                 String data = input.nextLine();
-                value = convertInt(data,AL);
-                writeInMemory(value, CH, address);
-                address += CH;
+                value = convertInt(data,format);
+                writeInMemory(value, sizeCells, address);
+                address += sizeCells;
             }catch(Exception e){
                 throw e;
             }

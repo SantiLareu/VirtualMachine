@@ -15,7 +15,7 @@ abstract public class Mnemonic{
 
 
 	public void ModifyCC(int result){
-		int cc = vm.getRegisters().getRegister(8);
+		int cc = vm.getRegisters().getRegister(17);
 
 		cc = cc & 0x0FFFFFFF;
 
@@ -26,8 +26,6 @@ abstract public class Mnemonic{
 		} else {
 			cc = 0x0; 
 		}
-
-		vm.getRegisters().setRegister(8, cc);
-
+		vm.getRegisters().setRegister(17, cc);
 	}
 }

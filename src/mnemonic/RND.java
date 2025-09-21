@@ -13,7 +13,7 @@ public class RND extends Mnemonic2 {
     public void operate(Operand A, Operand B) throws Exception {
 
         int valueB = B.getValue();
-        A.setValue((int) (Math.random() * valueB));
+        A.setValue((int) (Math.random() * valueB)); //pregintar si hace falta chequear que B no se un numero negativo
 
     }
 
