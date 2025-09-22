@@ -189,17 +189,16 @@ public class VirtualMachine {
     // INICIA BLOQUE DISASSEMBLER
 
     public void disassembler() throws Exception{
-        int entry_point = 0;
         System.out.println("--------------------DISASSEMBLER--------------------");
-        CSDisassembler(entry_point);
+        CSDisassembler();
         System.out.println("----------------------------------------------------");
 
     }
-    public void CSDisassembler(int entry_point) throws Exception{
+    public void CSDisassembler() throws Exception{
         int index = 0; 
 		int instruction,codop,opA,opB,tipoOpA,tipoOpB,cantOp;
-        int base = this.segTable.getBase(this.registers.getRegister(0) >> 16);
-		byte[] codeSegment = new byte[this.segTable.getSize(this.registers.getRegister(0) >> 16)];
+        int base = this.segTable.getBase(this.registers.getRegister(26) >> 16);
+		byte[] codeSegment = new byte[this.segTable.getSize(this.registers.getRegister(26) >> 16)];
 		System.arraycopy(this.virtualMemory.getMemory(),base, codeSegment, 0, codeSegment.length);
 
 		while (index < codeSegment.length) {
@@ -209,11 +208,8 @@ public class VirtualMachine {
             tipoOpA = (instruction >> 4) & 0x3; tipoOpB = (instruction >> 6) & 0x3;
             opA = 0; opB = 0;
 
-            if(index == entry_point){
-                System.out.print(">");
-            }else{
-                System.out.print(" ");
-            }
+            System.out.print(" ");
+
             System.out.print(String.format("[%04X] ",base));
             System.out.print(String.format("%02X ", instruction));
 			if (cantOp==0) { 
@@ -277,6 +273,8 @@ public class VirtualMachine {
 
             A = this.getOperand(((instruction >> 4) & 0x3), this.operandA, this.getData(instruction, ((instruction >> 6) & 0x3)));
             B = this.getOperand(((instruction >> 6) & 0x3), this.operandB, this.getData(instruction,0));
+
+            /*ver si aca se podria cargar el LAR*/ 
             
             this.setOp1Op2(A, B, instruction);
             this.addIP(instruction);

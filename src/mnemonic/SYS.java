@@ -29,7 +29,7 @@ public class SYS extends Mnemonic1 {
                 this.READ(numberCells, sizeCells, EAX, EDX);
                 break;
             case 2:
-                this.WRITE((ECX & 0xFF),((ECX >> 8) & 0xFF), (EDX & 0xFF));
+                this.WRITE(numberCells, sizeCells, EAX, EDX);
                 break;
             default:
                 break;
@@ -46,9 +46,9 @@ public class SYS extends Mnemonic1 {
         this.vm.getVirtualMemory().writeNbytes(address, sizeCells, value);
     }
     
-    private int readFromMemory(int CH, int logic_address) throws Exception {
+    private int readFromMemory(int sizeCells, int logic_address) throws Exception {
         int address = this.vm.getSegTable().LogicToPhysic(logic_address);
-        return this.vm.getVirtualMemory().readNbytes(address, CH);
+        return this.vm.getVirtualMemory().readNbytes(address, sizeCells);
 
     }
     //FIN FUNCIONES COMUNES
@@ -74,27 +74,27 @@ public class SYS extends Mnemonic1 {
         
     }
 
-    private int convertInt(String data, int AL) throws Exception {
+    private int convertInt(String data, int format) throws Exception {
         int value = 0;
 
-        //CONVIERTE A HEXA SI LO PERMITE  AL
-        if((AL & 0b01000) != 0){
+        //CONVIERTE A HEXA SI LO PERMITE  format
+        if((format & 0b01000) != 0){
             value = Integer.parseInt(data,16);
         }
-        //CONVIERTE A BINARIO SI LO PERMITE  AL
-        else if((AL & 0b10000) != 0){
+        //CONVIERTE A BINARIO SI LO PERMITE  format
+        else if((format & 0b10000) != 0){
             value = Integer.parseInt(data,2);
         }
-        //CONVIERTE A OCTAL SI LO PERMITE AL
-        else if((AL & 0b00100) != 0){
+        //CONVIERTE A OCTAL SI LO PERMITE format
+        else if((format & 0b00100) != 0){
             value = Integer.parseInt(data, 8);
         }
-        //CONVIERTE UN CARECTER A DECIMAL SI LO PERMITE AL
-        else if(data.length() == 1 && (AL & 0b00010) != 0){
+        //CONVIERTE UN CARECTER A DECIMAL SI LO PERMITE format
+        else if(data.length() == 1 && (format & 0b00010) != 0){
             value = (int)data.charAt(0);
         }
-        //CONVIERTE A DECIMAL SI LO PERMITE AL
-        else if((AL & 0b00001) != 0){
+        //CONVIERTE A DECIMAL SI LO PERMITE format
+        else if((format & 0b00001) != 0){
             value = Integer.parseInt(data, 10);
         
         }else{
@@ -109,43 +109,43 @@ public class SYS extends Mnemonic1 {
     
     //INICIO BLOQUE WRITE (SYS 2)
 
-    private void WRITE(int CL, int CH, int AL) throws Exception {
-        int address = this.vm.getRegisters().getRegister(13);
+    private void WRITE(int numberCells,int sizeCells, int format, int EDX) throws Exception {
+        int address = EDX;
 
-        for (int i = 0; i < CL; i++) {
+        for (int i = 0; i < numberCells; i++) {
             try {
-                int value = readFromMemory(CH, address);
-                String output = convertToString(value, AL);
+                int value = readFromMemory(sizeCells, address);
+                String output = convertToString(value, format);
                 System.out.println("["+ String.format("%04X",this.vm.getSegTable().LogicToPhysic(address)) + "] " + output);
-                address += CH;
+                address += sizeCells;
             } catch (Exception e) {
                 throw e;
             }
         }
     }
 
-    private String convertToString(int value, int AL) throws Exception {
+    private String convertToString(int value, int format) throws Exception {
         String result = "";
 
 
-        // CONVIERTE A HEXA SI LO PERMITE AL
-        if ((AL & 0b01000) != 0) {
+        // CONVIERTE A HEXA SI LO PERMITE format
+        if ((format & 0b01000) != 0) {
             result = String.format("0x%08X", value);
         }
-        // CONVIERTE A BINARIO SI LO PERMITE AL
-        if ((AL & 0b10000) != 0) {
+        // CONVIERTE A BINARIO SI LO PERMITE format
+        if ((format & 0b10000) != 0) {
             if (result.length() > 0) 
                 result += " ";
             result += "0b" + Integer.toBinaryString(value);
         }
-        // CONVIERTE A OCTAL SI LO PERMITE AL
-        if ((AL & 0b00100) != 0) {
+        // CONVIERTE A OCTAL SI LO PERMITE format
+        if ((format & 0b00100) != 0) {
             if (result.length() > 0) 
                 result += " ";
             result += "0o" + Integer.toOctalString(value);
         }
-        // CONVIERTE A CHAR SI LO PERMITE AL
-        if ((AL & 0b00010) != 0) {
+        // CONVIERTE A CHAR SI LO PERMITE format
+        if ((format & 0b00010) != 0) {
             if (result.length() > 0) 
                 result += " ";
             
@@ -156,8 +156,8 @@ public class SYS extends Mnemonic1 {
                 result += ".";  
             }
         }
-        // CONVIERTE A DECIMAL SI LO PERMITE AL
-        if ((AL & 0b00001) != 0) {
+        // CONVIERTE A DECIMAL SI LO PERMITE format
+        if ((format & 0b00001) != 0) {
             if (result.length() > 0) 
                 result += " ";
             result += Integer.toString(value);
@@ -170,117 +170,4 @@ public class SYS extends Mnemonic1 {
         return result;
     }
     //FIN BLOQUE WRITE (SYS 2)
-
-    //INICIO BLOQUE STRINGREAD (SYS 3)
-
-    private void STRINGREAD(int CX) throws Exception{
-        int address = this.vm.getRegisters().getRegister(13);
-        Scanner input = new Scanner(System.in);
-        String data = input.nextLine();
-
-        if(CX != -1 && data.length() > CX){
-            data = data.substring(0, CX);
-        }
-
-        data += "\0";
-        input.close();
-
-
-        for (int i = 0; i < data.length();i++){
-            char c = data.charAt(i);
-            int value = (int) c;
-            this.writeInMemory(value, 1, address);
-            address++;
-        }
-
-    }
-    //FIN BLOQUE STRINGREAD (SYS 3)
-
-    //INICIO BLOQUE STRINGWRITE (SYS 4)
-    private void STRINGWRITE() throws Exception{
-        int address = this.vm.getRegisters().getRegister(13);
-        int value = readFromMemory(1,address);
-        String data = "";
-        
-        
-        while (value != 0x00) {
-            data += this.convertToString(value,0x02);
-            address++;
-            value = readFromMemory(1,address);
-        }
-
-        System.out.println("["+ String.format("%04X",this.vm.getSegTable().LogicToPhysic(this.vm.getRegisters().getRegister(13))) + "] " + data);
-        
-    }
-    //FIN BLOQUE STRINGWRITE (SYS 4)
-
-    //INICIO BLOQUE CLEARSCREEEN (SYS 7)
-    private void CLEARSCREEN() throws Exception{
-        for (int i = 0; i < 100; i++) {
-            System.out.println();
-        }
-    }
-    //FIN BLOQUE CLEARSCREEN (SYS 7)
-
-    //INICIO BLOQUE BREAKPOINT (SYS 0xF)
-    public void BREAKPOINT() throws Exception{
-        if(this.vm.getVmi_file() != null){
-            FileOutputStream file =  new  FileOutputStream(this.vm.getVmi_file());
-
-            this.createHeader(file);
-            this.copyBytes(file, this.vm.getRegisters().getRegs());
-            this.copyBytes(file, this.vm.getSegTable().getSegmentTable());
-            file.write(this.vm.getVirtualMemory().getMemory());
-
-            file.close();
-
-            Scanner input = new Scanner(System.in);
-            String next = input.nextLine();
-
-            if(next.equals("q")){
-                this.vm.getRegisters().setRegister(5,-1);
-            }else if(next.isEmpty()){
-                this.vm.setBreakpoint(true);
-            }else if(next.equals("g")){
-
-            }else{
-                input.close();
-                throw new Exception("Invalid command. Use 'q' to quit, 'g' to continue, or press Enter to repeat.");
-            }
-
-            input.close();
-        }
-
-    }
-
-    private void createHeader(FileOutputStream  file) throws Exception{
-        int memory = this.vm.getVirtualMemory().getMemorySize();
-        byte[] indentifier = {'V','M','I','2','5'};
-        byte[] version = {1};
-        byte[] memory_size = {(byte)((memory >> 8) & 0xFF),(byte)(memory & 0xFF)};
-
-        file.write(indentifier);
-        file.write(version);
-        file.write(memory_size);
-    }
-
-    private void copyBytes(FileOutputStream file, int[] data) throws Exception{
-        for(int i = 0; i < data.length; i++){
-            byte[] bytes = intToByteArray(data[i]);
-            file.write(bytes);
-        }
-    }
-            
-    private byte[] intToByteArray(int i) {
-        byte[] bytes = new byte[4];
-
-        for(int j = 3; j >=0; j--){
-            bytes[j] = (byte)(i & 0xFF);
-            i = i >> 8;
-        }
-
-        return bytes;
-    }
-
-    //FIN BLOQUE BREAKPOINT (SYS 0xF)
 }

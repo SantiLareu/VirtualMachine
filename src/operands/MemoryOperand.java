@@ -16,13 +16,16 @@ public class MemoryOperand extends Operand {
         int codreg = (this.data >> 16) & 0x1F;
         int reg = this.vm.getRegisters().getRegister(codreg);
         int value = 0;
+        int size = 4;
 
         offset += (reg & 0xFFFF);
         offset = offset & 0xFFFF;
 
         reg = (reg & 0xFFFF0000) | offset;
 
-        value = (this.vm.getVirtualMemory().read4bytes(vm.getSegTable().LogicToPhysic(reg)));
+        value = (this.vm.getVirtualMemory().readNbytes(vm.getSegTable().LogicToPhysic(reg),size));
+        this.setMemoryAccess(reg, vm.getSegTable().LogicToPhysic(reg), size, value);
+        
         return value;
 
     }
@@ -32,36 +35,35 @@ public class MemoryOperand extends Operand {
         int offset = this.data & 0x0000FFFF;
         int codreg = (this.data >> 16) & 0x1F;
         int reg = this.vm.getRegisters().getRegister(codreg);
+        int size = 4;
 
         offset += (reg & 0xFFFF);
         offset = offset & 0xFFFF;
 
         reg = (reg & 0xFFFF0000) | offset;
 
-        this.vm.getVirtualMemory().write4bytes(vm.getSegTable().LogicToPhysic(reg),value);
+        this.vm.getVirtualMemory().writeNbytes(vm.getSegTable().LogicToPhysic(reg),size,value);
+        this.setMemoryAccess(reg,  vm.getSegTable().LogicToPhysic(reg), size, value);
 
     }  
+
+    public void setMemoryAccess(int logic_address, int fisic_address, int size, int value) {
+        this.vm.getRegisters().setRegister(0, logic_address & 0xFFFFFFFF);
+
+        int MAR = ((size & 0xFFFF) << 16) | (fisic_address & 0xFFFF);
+        this.vm.getRegisters().setRegister(1, MAR);
+
+        this.vm.getRegisters().setRegister(2, value & 0xFFFFFFFF);
+    }
 
     @Override
     public String toString() {
         String result = "";
-        int offset = ((this.data & 0x00FFFF00) << 8) >> 16;
-        int codreg = (this.data >> 4) & 0x0F;
-        int cell_size = this.data & 0x3;
-        char access_modificator;
+        int offset = this.data & 0x0000FFFF;
+        int codreg = (this.data >> 16) & 0x1F;
+        
 
-        switch (cell_size) {
-            case 0:
-                access_modificator = 'l';
-                break;
-            case 3:
-                access_modificator = 'b';
-                break;
-            default:
-                access_modificator = 'w';
-        }
-
-        result += access_modificator + "[";
+        result += "[";
         if(codreg == 1){
             result += Integer.toString(offset);
         }else{

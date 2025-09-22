@@ -20,7 +20,7 @@ public class RegisterOperand extends Operand {
     @Override
     public void setValue(int value) throws Exception {
         int codreg = this.data & 0x1F;
-        vm.getRegisters().getRegister(codreg);
+        this.vm.getRegisters().setRegister(codreg, value);
     } 
 
     @Override
