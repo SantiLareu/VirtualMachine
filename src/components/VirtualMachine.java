@@ -89,7 +89,7 @@ public class VirtualMachine {
         return virtualMemory;
     }
 
-    public SegmentTable getSegTable() { // Cambiado a SegmentTable2
+    public SegmentTable getSegTable() { 
         return segTable;
     }
 
@@ -269,12 +269,11 @@ public class VirtualMachine {
             
             instruction = this.getInstruction();
             codop = this.getOpcode(instruction);
-            this.registers.setRegister(4, codop); //carga del registro OPC
+            this.registers.setRegister(4, codop); 
 
             A = this.getOperand(((instruction >> 4) & 0x3), this.operandA, this.getData(instruction, ((instruction >> 6) & 0x3)));
             B = this.getOperand(((instruction >> 6) & 0x3), this.operandB, this.getData(instruction,0));
 
-            /*ver si aca se podria cargar el LAR*/ 
             
             this.setOp1Op2(A, B, instruction);
             this.addIP(instruction);
