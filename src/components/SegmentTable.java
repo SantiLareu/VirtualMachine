@@ -48,7 +48,7 @@ public class SegmentTable {
 		int limit_segment = base_address + segment_size; 
 		int fisic_address = base_address + offset;
 		
-		if((fisic_address < limit_segment) && (fisic_address >= base_address)) //cambio en la condicion <= por <
+		if((fisic_address <= limit_segment) && (fisic_address >= base_address)) 
 			return fisic_address;
 		else if(fisic_address > limit_segment)
 			throw new Exception("Attempt to access a segment after the limit address");

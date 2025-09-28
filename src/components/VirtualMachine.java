@@ -348,7 +348,7 @@ public class VirtualMachine {
         int regOp1 = 0, regOp2 = 0;
 
         if (op1 != null){
-            regOp1 = (tipoA << 24) | ((op1.getData() & 0x00FFFFFF));
+            regOp1 = (tipoA & 0xFF) << 24 | ((op1.getData() & 0x00FFFFFF)); //cambio 
             regOp2 = (tipoB << 24) | ((op2.getData() & 0x00FFFFFF));
         }else if(op2 != null){
             regOp1 = (tipoB << 24) | ((op2.getData() & 0x00FFFFFF));

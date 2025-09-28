@@ -1,0 +1,16 @@
+ENTREGA FINAL MAQUINA VIRTUAL PARTE 1
+
+INTEGRANTES:
+    SANTIAGO LAREU
+
+
+AGREGACIONES Y CAMBIOS:
+    PAQUETE MNEMONIC
+        CLASE SYS
+            METODO private String convertToString(int value, int format) throws Exception{}
+                Se ejecuta cuando se invoca la instrucción SYS 2.
+                Se modificó la lógica de conversión a caracteres.
+                Ahora se utiliza un StringBuilder para construir la cadena 
+                a partir de un valor entero, 
+                lo que permite mostrar correctamente el contenido 
+                completo de una celda de tamaño definido.

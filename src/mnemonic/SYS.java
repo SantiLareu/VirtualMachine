@@ -149,12 +149,19 @@ public class SYS extends Mnemonic1 {
             if (result.length() > 0) 
                 result += " ";
             
-            char character = (char) value;
-            if (character >= 32 && character <= 126) {
-                result += character;
-            } else {
-                result += ".";  
+            StringBuilder chars = new StringBuilder();
+            boolean printable = false;
+            for (int i=3; i>=0;i--){
+                int b = (value >> (i*8)) & 0xFF;
+                if (b >= 32 && b <= 126 ) {
+                    chars.append((char) b);
+                    printable = true;
+                }
             }
+            if (!printable){
+                chars.append(".");
+            }
+            result += chars.toString();
         }
         // CONVIERTE A DECIMAL SI LO PERMITE format
         if ((format & 0b00001) != 0) {

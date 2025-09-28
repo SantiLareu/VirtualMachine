@@ -7,7 +7,7 @@ Se necesita Java Runtime Environment (JRE) 8+ o superior
 Verificar ejecutando en la consola java -version
 
 
-Desde la consola, ubicada en la ruta donde esta guardado el proyecto ejecutar el siguiente comando:
+Desde la consola (PowerShell), ubicada en la ruta donde esta guardado el proyecto ejecutar el siguiente comando:
 
 vmx [ruta donde esta ubicado el archivo .vmx a probar en la VM] [-d] (en caso de querer ejecutar el disassembler)
 
@@ -19,3 +19,9 @@ Otra opcion
 tambien desde la ruta donde esta guardado el proyecto
 
 java -cp bin mainVM [ruta donde esta el programa .vmx a ejecutar] -d
+
+Otra opcion
+tambien desde la ruta donde esta guardado el proyecto
+desde la terminar de visual studio code ejecutar
+
+.\vmx [ruta donde esta ubicado el archivo .vmx a probar en la VM] [-d] (en caso de querer ejecutar el disassembler)
