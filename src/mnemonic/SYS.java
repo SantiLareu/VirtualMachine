@@ -31,6 +31,17 @@ public class SYS extends Mnemonic1 {
             case 2:
                 this.WRITE(numberCells, sizeCells, EAX, EDX);
                 break;
+            case 3:
+                this.STRINGREAD((ECX & 0xFFFF));
+                break;
+            case 4: 
+                this.STRINGWRITE();
+                break;
+            case 7:
+                this.CLEARSCREEN();
+                break;
+            case 0xF:
+                    this.BREAKPOINT();
             default:
                 break;
         }
@@ -150,17 +161,15 @@ public class SYS extends Mnemonic1 {
                 result += " ";
             
             StringBuilder chars = new StringBuilder();
-            boolean printable = false;
             for (int i=3; i>=0;i--){
                 int b = (value >> (i*8)) & 0xFF;
                 if (b >= 32 && b <= 126 ) {
                     chars.append((char) b);
-                    printable = true;
+                }else{
+                    chars.append((char) '.');
                 }
             }
-            if (!printable){
-                chars.append(".");
-            }
+
             result += chars.toString();
         }
         // CONVIERTE A DECIMAL SI LO PERMITE format
@@ -177,4 +186,116 @@ public class SYS extends Mnemonic1 {
         return result;
     }
     //FIN BLOQUE WRITE (SYS 2)
+
+    //INICIO BLOQUE STRINGREAD (SYS 3)
+
+    private void STRINGREAD(int CX) throws Exception{
+        int address = this.vm.getRegisters().getRegister(13);
+        Scanner input = new Scanner(System.in);
+        String data = input.nextLine();
+
+        if (CX != -1 && data.length() > CX){
+            data = data.substring(0,CX);
+        }
+
+        data += "\0";
+        input.close();
+
+        for (int i = 0; i < data.length(); i++){
+            char c = data.charAt(i);
+            int value = (int) c;
+            this.writeInMemory(value, 1, address);
+            address++;
+        }
+    }
+    //FIN BLOQUE STRINGREAD (SYS 3)
+    
+    //INICIO BLOQUE STRINGWRITE (SYS 4)
+    private void STRINGWRITE() throws Exception{
+        int address = this.vm.getRegisters().getRegister(13);
+        int value = readFromMemory(1,address);
+        String data = "";
+        
+        
+        while (value != 0x00) {
+            data += this.convertToString(value,0x02);
+            address++;
+            value = readFromMemory(1,address);
+        }
+
+        System.out.println("["+ String.format("%04X",this.vm.getSegTable().LogicToPhysic(this.vm.getRegisters().getRegister(13))) + "] " + data);
+        
+    }
+    //FIN BLOQUE STRINGWRITE (SYS 4)
+
+    //INICIO BLOQUE CLEARSCREEEN (SYS 7)
+    private void CLEARSCREEN() throws Exception{
+        for (int i = 0; i < 100; i++) {
+            System.out.println();
+        }
+    }
+    //FIN BLOQUE CLEARSCREEN (SYS 7)
+
+    //INICIO BLOQUE BREAKPOINT (SYS 0xF)
+    public void BREAKPOINT() throws Exception{
+        if(this.vm.getVmi_file() != null){
+            FileOutputStream file =  new  FileOutputStream(this.vm.getVmi_file());
+
+            this.createHeader(file);
+            this.copyBytes(file, this.vm.getRegisters().getRegs());
+            this.copyBytes(file, this.vm.getSegTable().getSegmentTable());
+            file.write(this.vm.getVirtualMemory().getMemory());
+
+            file.close();
+
+            Scanner input = new Scanner(System.in);
+            String next = input.nextLine();
+
+            if(next.equals("q")){
+                this.vm.getRegisters().setRegister(3,-1);
+            }else if(next.isEmpty()){
+                this.vm.setBreakpoint(true);
+            }else if(next.equals("g")){
+
+            }else{
+                input.close();
+                throw new Exception("Invalid command. Use 'q' to quit, 'g' to continue, or press Enter to repeat.");
+            }
+
+            input.close();
+        }
+
+    }
+
+    private void createHeader(FileOutputStream  file) throws Exception{
+        int memory = this.vm.getVirtualMemory().getMemorySize();
+        byte[] indentifier = {'V','M','I','2','5'};
+        byte[] version = {1};
+        byte[] memory_size = {(byte)((memory >> 8) & 0xFF),(byte)(memory & 0xFF)};
+
+        file.write(indentifier);
+        file.write(version);
+        file.write(memory_size);
+    }
+
+    private void copyBytes(FileOutputStream file, int[] data) throws Exception{
+        for(int i = 0; i < data.length; i++){
+            byte[] bytes = intToByteArray(data[i]);
+            file.write(bytes);
+        }
+    }
+            
+    private byte[] intToByteArray(int i) {
+        byte[] bytes = new byte[4];
+
+        for(int j = 3; j >=0; j--){
+            bytes[j] = (byte)(i & 0xFF);
+            i = i >> 8;
+        }
+
+        return bytes;
+    }
+
+    //FIN BLOQUE BREAKPOINT (SYS 0xF)
+
 }

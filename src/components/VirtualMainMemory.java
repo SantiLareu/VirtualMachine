@@ -67,5 +67,13 @@ public class VirtualMainMemory {
 			System.arraycopy(memory, 0, this.memory, 0, memory.length);
 		}
 	}
+
+	public void copyMemory(byte[] memory) throws Exception{
+		if(memory.length > this.MEMORY_SIZE) {
+			throw new Exception("Exceeded memory size");
+		}else {
+			System.arraycopy(memory, 0, this.memory, 0, memory.length);
+		}
+	}
 	
 }

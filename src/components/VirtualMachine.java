@@ -5,7 +5,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 
-import components.SegmentTable;
+import componentsSecondPart.SegmentTable2;
 import mnemonic.*;
 import operands.*;
 import utils.utilities;
@@ -14,7 +14,7 @@ import utils.utilities;
 
 public class VirtualMachine {
     protected VirtualMainMemory virtualMemory;
-    protected SegmentTable segTable;
+    protected SegmentTable2 segTable;
     protected Registers registers;
     protected HashMap<Integer,Mnemonic0> mnemonics0;
     protected HashMap<Integer,Mnemonic1> mnemonics1;
@@ -22,13 +22,15 @@ public class VirtualMachine {
     protected Operand[] operandA;
     protected Operand[] operandB;
     protected boolean disassembler = false;
+    protected boolean breakpoint = true;
+    protected String vmi_file;
 
 
     // BLOQUE CONSTRUCTORES GETTERS Y SETTERS
     
     public VirtualMachine() {
         this.virtualMemory = new VirtualMainMemory();
-        this.segTable = new SegmentTable();
+        this.segTable = new SegmentTable2();
         this.registers = new Registers();
         this.mnemonics0 = new HashMap<>();
         this.mnemonics1 = new HashMap<>();
@@ -89,12 +91,16 @@ public class VirtualMachine {
         return virtualMemory;
     }
 
-    public SegmentTable getSegTable() { 
+    public SegmentTable2 getSegTable() { // Cambiado a SegmentTable2
         return segTable;
     }
 
     public Registers getRegisters() {
         return registers;
+    }
+
+    public void setBreakpoint (boolean breakpoint){
+        this.breakpoint = breakpoint;
     }
 
     public HashMap<Integer, Mnemonic0> getMnemonics0() {
@@ -109,6 +115,14 @@ public class VirtualMachine {
 
     public HashMap<Integer, Mnemonic2> getMnemonics2() {
         return mnemonics2;
+    }
+
+    public String getVmi_file (){
+        return vmi_file;
+    }
+
+    public void setVmi_file(String vmi_file){
+        this.vmi_file = vmi_file;
     }
 
     public void setDisassembler(boolean disassembler) {
@@ -186,15 +200,48 @@ public class VirtualMachine {
 
     //FIN BLOQUE CARGA DE PROGRAMA EN MEMORIA PRINCIPAL
 
-    // INICIA BLOQUE DISASSEMBLER
+    //INICIO BLOQUE DISASSEMBLER 
 
-    public void disassembler() throws Exception{
+    
+    public void disassembler(byte[] offset) throws Exception{
+        int entry_point = ((int)offset[0]<<16) | ((int)offset[1]);
         System.out.println("--------------------DISASSEMBLER--------------------");
-        CSDisassembler();
+        KSDisassembler();
+        System.out.println("----------------------------------------------------");
+        CSDisassembler(entry_point);
         System.out.println("----------------------------------------------------");
 
     }
-    public void CSDisassembler() throws Exception{
+
+    public void KSDisassembler(){
+        if(this.registers.getRegister(30) != -1){
+            int index = 0;
+            int base = this.segTable.getBase(this.registers.getRegister(30)>>16);
+            String constant;
+            byte[] ConstantSegment = new byte[this.segTable.getSize(this.registers.getRegister(30)>>16)];
+            System.arraycopy(this.virtualMemory.getMemory(),base, ConstantSegment, 0, ConstantSegment.length);
+
+            while(index < ConstantSegment.length){
+                System.out.print(String.format(" [%04X] ", base));
+                constant = "";
+                while(ConstantSegment[index] != 0x00){
+                    char c = (char)ConstantSegment[index];
+                    if (c >= 32 && c <= 126) { 
+                        constant += c;
+                    } else {
+                        constant += ".";
+                    }
+                    index++;
+                    base++;
+                }
+                System.out.println("\"" + constant + "\"");
+                base++;
+                index++;
+            }
+        }
+
+    }
+    public void CSDisassembler(int entry_point) throws Exception{
         int index = 0; 
 		int instruction,codop,opA,opB,tipoOpA,tipoOpB,cantOp;
         int base = this.segTable.getBase(this.registers.getRegister(26) >> 16);
@@ -208,8 +255,11 @@ public class VirtualMachine {
             tipoOpA = (instruction >> 4) & 0x3; tipoOpB = (instruction >> 6) & 0x3;
             opA = 0; opB = 0;
 
-            System.out.print(" ");
-
+            if(index == entry_point){
+                System.out.print(">");
+            }else{
+                System.out.print(" ");
+            }
             System.out.print(String.format("[%04X] ",base));
             System.out.print(String.format("%02X ", instruction));
 			if (cantOp==0) { 
@@ -252,8 +302,8 @@ public class VirtualMachine {
     }
 
 
+    //FIN BLOQUE DISASSEMBLER 
 
-    //FIN BLOQUE DISASSEMBLER
 
     //BLOQUE DE EJECUCION DEL PROGRAMA
 
@@ -277,7 +327,17 @@ public class VirtualMachine {
             
             this.setOp1Op2(A, B, instruction);
             this.addIP(instruction);
-            this.Operation(codop, A, B, this.cantOP(instruction));
+            //bloque donde verifica breakPoint
+            if (this.breakpoint){
+                this.Operation(codop, A, B, this.cantOP(instruction));
+                this.breakpoint = false;
+                SYS sys = new SYS(this);
+                sys.BREAKPOINT();
+            }
+            else{
+                this.Operation(codop, A, B, this.cantOP(instruction));
+
+            }
         }
 
     }
@@ -360,10 +420,10 @@ public class VirtualMachine {
 
 
     protected void Operation(int codop, Operand A, Operand B, int cantop) throws Exception{
-        if(cantop == 0 && codop == 0x0F) {
+        if(cantop == 0 && (codop == 0x0F || codop == 0x0E)) { //se agrego la operacion RET
             mnemonics0.get(codop).operate();
 
-        }else if(cantop == 1 && codop >= 0x00 && codop <= 0x08) {
+        }else if(cantop == 1 && codop >= 0x00 && codop <= 0x0D) { //se agregan PUSH POP CALL
             mnemonics1.get(codop).operate(B);
 
         }else if(cantop == 2 && codop >= 0x10 && codop <= 0x1F) {
