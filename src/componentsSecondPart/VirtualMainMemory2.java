@@ -15,9 +15,9 @@ public class VirtualMainMemory2 extends VirtualMainMemory{
     }
 
     @Override
-    public void setMemory(byte[] memory, byte[] size,int param_size) throws Exception {
-        if(size.length == 2){
-            super.setMemory(memory, size,0);
+    public void setMemory(byte[] memory, byte[] size,int param_size, byte version) throws Exception {
+        if(size.length == 2 && version == 1){
+            super.setMemory(memory, size,0,version);
         }else{
             int program_size = 0;
             int CS = ((int)(size[0] << 8)|(int)(size[1]& 0xFF));

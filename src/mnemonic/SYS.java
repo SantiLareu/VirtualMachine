@@ -32,7 +32,7 @@ public class SYS extends Mnemonic1 {
                 this.WRITE(numberCells, sizeCells, EAX, EDX);
                 break;
             case 3:
-                this.STRINGREAD((ECX & 0xFFFF));
+                this.STRINGREAD((ECX));
                 break;
             case 4: 
                 this.STRINGWRITE();
@@ -189,17 +189,16 @@ public class SYS extends Mnemonic1 {
 
     //INICIO BLOQUE STRINGREAD (SYS 3)
 
-    private void STRINGREAD(int CX) throws Exception{
+    private void STRINGREAD(int ECX) throws Exception{
         int address = this.vm.getRegisters().getRegister(13);
         Scanner input = new Scanner(System.in);
         String data = input.nextLine();
 
-        if (CX != -1 && data.length() > CX){
-            data = data.substring(0,CX);
+        if (ECX != -1 && data.length() > ECX){
+            data = data.substring(0,ECX);
         }
 
         data += "\0";
-        input.close();
 
         for (int i = 0; i < data.length(); i++){
             char c = data.charAt(i);
@@ -218,12 +217,12 @@ public class SYS extends Mnemonic1 {
         
         
         while (value != 0x00) {
-            data += this.convertToString(value,0x02);
+            data += (char) value;
             address++;
             value = readFromMemory(1,address);
         }
 
-        System.out.println("["+ String.format("%04X",this.vm.getSegTable().LogicToPhysic(this.vm.getRegisters().getRegister(13))) + "] " + data);
+        System.out.println(data);
         
     }
     //FIN BLOQUE STRINGWRITE (SYS 4)

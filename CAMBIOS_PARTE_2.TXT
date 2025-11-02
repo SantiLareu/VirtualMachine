@@ -1,0 +1,59 @@
+ENTREGA FINAL MAQUINA VIRTUAL PARTE 2
+
+INTEGRANTES:
+    SANTIAGO LAREU
+
+
+AGREGACIONES Y CAMBIOS:
+    PAQUETE MNEMONIC
+        CLASE RET
+            METODO OPERATE()
+                Se cambio en la linea 17 IP.setData(0x03);
+                Version anterior decia IP.setData(0x53);, es decir que 
+                a la variable que se comportaba como IP para hacer el POP
+                no se seteaba correctamente con su codigo correspondiente.
+        
+        CLASE SYS
+            METODO OPERATE()
+                Se cambio la linea 35 this.STRINGREAD((ECX));
+                Antes se le aplicaba una mascara para quedarme con los this.STRINGREAD((ECX & 0xFFFF));
+                2 bytes menos significativos pero se cambio para respetar lo que dice la especificacion.
+            
+            METODO STRINGREAD() (linea 192)
+                Solo se cambio la linea 202 donde se elimino input.close(); que traia problemas
+                a la hora de escribir en memoria.
+
+            METODO STRINGWRITE() (linea 213)
+                Se cambio la linea 220 data += (char) value; antes decia
+                data += this.convertToString(value,0x02); y eso traia problemas
+                por ejemplo imprimia los strings erroneamente con muchos '.' consecutivos entre 
+                los Strings que si se tenian que imprimir.
+
+                Se cambio la linea 226, es decir el system out, ya que antes se imprimia la direccion
+                de memoria junto con el String y eso no esta especificado en la documentacion,
+                es decir antes decia 
+                System.out.println("["+ String.format("%04X",this.vm.getSegTable().LogicToPhysic(this.vm.getRegisters().getRegister(13))) + "] " + data);
+                y se cambio por solo escribir System.out.println(data);
+    
+    PAQUETE COMPONENTSSECONDPART + MAIN
+        CLASE VIRTUALMACHINE2()
+            Metodo (linea 86) startMemory(String file, byte[] allbytes, int param_size, byte version) throws Exception
+                Se agrego el parametro version para tener un mayor control sobre los metodos que se invocan y diferenciar correctamente
+                algunos metodos que solo corresponden a una version de la VM especifica.
+                Por ello en cada llamado a este metodo se pasa por parametro la version de la VM
+                que se esta ejecutando.
+
+            Mismo caso para los metodos 
+                CLASE SEGMENTTABLE2 (linea 10) setSegmentTable(byte[] segments_size,int param_size, byte version)
+                CLASE VIRTUALMAINMEMORY() y VIRTUALMAINMEMORY2() (lineas 62 y 18 respectivamente)
+                    setMemory(byte[] memory, byte[] size, int param_size, byte version)
+
+            Aunque no era 100% necesario este cambio, por cuestiones de seguridad se decidio 
+            aplicarlos.
+            
+
+
+
+               
+
+    

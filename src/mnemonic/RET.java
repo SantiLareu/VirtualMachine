@@ -14,7 +14,7 @@ public class RET extends Mnemonic0{
         int CS = this.vm.getRegisters().getRegister(26);
         //POP <IP>
         Operand IP = new RegisterOperand(this.vm);
-        IP.setData(0x53);
+        IP.setData(0x03);
 
         Mnemonic1 m = new POP(this.vm);
         m.operate(IP);

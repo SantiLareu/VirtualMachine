@@ -49,16 +49,16 @@ public class mainVM {
 			}
 			byte version = allbytes[5];
 			if((version == 1 && file_path.endsWith(".vmx"))){
-				vm.startMemory(allbytes);
+				vm.startMemory(allbytes,version);
 			}else{
 				vm.setVmi_file(vmi_file_path);
 				
 				if(params != null){
 					vm.loadParams(params);
-					vm.startMemory(file_path,allbytes,vm.getParamSize(params) + params.length * 4);
+					vm.startMemory(file_path,allbytes,vm.getParamSize(params) + params.length * 4, version);
 					vm.initStack(params.length, vm.getParamSize(params));
 				}else{
-					vm.startMemory(file_path,allbytes,vm.getParamSize(params) + 0);
+					vm.startMemory(file_path,allbytes,vm.getParamSize(params) + 0, version);
 					if(!file_path.endsWith("vmi"))
 						vm.initStack(0,-1);
 				}

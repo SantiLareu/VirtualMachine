@@ -83,9 +83,8 @@ public class VirtualMachine2 extends VirtualMachine{
     //FIN BLOQUE VALIDACIONES
 
     //BLOQUE CARGA DE MEMORIA
-    public void startMemory(String file, byte[] allbytes, int param_size) throws Exception {
+    public void startMemory(String file, byte[] allbytes, int param_size, byte version) throws Exception {
 
-        byte version = allbytes[5];
 
         if(file.endsWith(".vmi")){
 
@@ -105,7 +104,7 @@ public class VirtualMachine2 extends VirtualMachine{
             
         }else{
             if (version == 1){
-                super.startMemory(allbytes);
+                super.startMemory(allbytes, version);
             } else {
                 byte[] segments = new byte[12];
                 byte[] memory = new byte[allbytes.length - 18];
@@ -113,9 +112,9 @@ public class VirtualMachine2 extends VirtualMachine{
                 System.arraycopy(allbytes,6, segments,0, 12);
                 System.arraycopy(allbytes,18, memory, 0, memory.length);
 
-                this.segTable.setSegmentTable(segments, param_size);
+                this.segTable.setSegmentTable(segments, param_size, version);
                 this.registers.initRegisters(segments, param_size);
-                this.virtualMemory.setMemory(memory, segments, param_size);
+                this.virtualMemory.setMemory(memory, segments, param_size, version);
             }
             
         }
@@ -167,8 +166,7 @@ public class VirtualMachine2 extends VirtualMachine{
         int acumulator = 0;
         fisic_address++;
         for(int i = 0; i < params.length; i++){
-            int pointer = (0x0000 << 16) | (acumulator & 0xFFFF); //aca se forma correctamente el puntero pero igual no borro lo anterior que funcionaba
-            //int pointer = acumulator;
+            int pointer = acumulator;
             this.virtualMemory.write4bytes(fisic_address, pointer);
             acumulator += params[i].length() + 1;
             fisic_address += 4;

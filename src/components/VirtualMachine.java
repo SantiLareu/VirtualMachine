@@ -186,15 +186,16 @@ public class VirtualMachine {
 
     //BLOQUE DE CARGA DE PROGRAMA EN MEMORIA PRINCIPAL
     
-    public void startMemory(byte[] allbytes) throws Exception {
+    
+    public void startMemory(byte[] allbytes, byte version) throws Exception {
         byte[] size = new byte[2]; 
         byte[] memory = new byte[allbytes.length - 8];
         
         System.arraycopy(allbytes,6,size,0,2);
         System.arraycopy(allbytes,8,memory,0,allbytes.length - 8);
         
-        this.virtualMemory.setMemory(memory, size,0);
-        this.segTable.setSegmentTable(size, this.virtualMemory.getMemorySize());
+        this.virtualMemory.setMemory(memory, size, 0, version);
+        this.segTable.setSegmentTable(size, this.virtualMemory.getMemorySize(), version);
         this.registers.loadRegisters(utilities.defaultRegisters);
     }
 
@@ -408,7 +409,7 @@ public class VirtualMachine {
         int regOp1 = 0, regOp2 = 0;
 
         if (op1 != null){
-            regOp1 = (tipoA & 0xFF) << 24 | ((op1.getData() & 0x00FFFFFF)); //cambio 
+            regOp1 = (tipoA & 0xFF) << 24 | ((op1.getData() & 0x00FFFFFF));  
             regOp2 = (tipoB << 24) | ((op2.getData() & 0x00FFFFFF));
         }else if(op2 != null){
             regOp1 = (tipoB << 24) | ((op2.getData() & 0x00FFFFFF));
@@ -420,10 +421,10 @@ public class VirtualMachine {
 
 
     protected void Operation(int codop, Operand A, Operand B, int cantop) throws Exception{
-        if(cantop == 0 && (codop == 0x0F || codop == 0x0E)) { //se agrego la operacion RET
+        if(cantop == 0 && (codop == 0x0F || codop == 0x0E)) { 
             mnemonics0.get(codop).operate();
 
-        }else if(cantop == 1 && codop >= 0x00 && codop <= 0x0D) { //se agregan PUSH POP CALL
+        }else if(cantop == 1 && codop >= 0x00 && codop <= 0x0D) { 
             mnemonics1.get(codop).operate(B);
 
         }else if(cantop == 2 && codop >= 0x10 && codop <= 0x1F) {

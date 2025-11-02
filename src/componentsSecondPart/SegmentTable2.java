@@ -7,9 +7,9 @@ public class SegmentTable2 extends SegmentTable{
         super();
     }
 
-    public void setSegmentTable(byte[] segments_size,int param_size) {
+    public void setSegmentTable(byte[] segments_size,int param_size, byte version) {
 
-        if(segments_size.length == 2){
+        if(segments_size.length == 2 && version == 1){
             super.setSegmentTable(segments_size, 16384);   
         }else{
             this.segmentTable[0] = param_size;
